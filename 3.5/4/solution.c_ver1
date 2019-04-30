@@ -1,0 +1,73 @@
+#define _DEFAULT_SOURCE
+#include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string.h>
+#include <linux/fcntl.h>
+
+int main(int argc, char **argv)
+{
+	struct dirent **namelist;
+	int    n;
+	char   file_name[300];
+	int    result = 0;
+	int    count = 0;
+	int    fd;
+	char   ch;
+	char   ppid[10];
+	int    i = 0;
+	
+	if (argc < 2)
+		exit(EXIT_FAILURE);
+
+	n = scandir("/proc", &namelist, NULL, alphasort);
+	
+	if (n == -1) {
+		perror("scandir");
+		exit(EXIT_FAILURE);
+	}
+	
+	while (n--) {
+		snprintf(file_name, sizeof(file_name) - 1,
+			"/proc/%s/stat", namelist[n]->d_name);
+
+		fd = open(file_name, O_RDONLY);
+		if (fd == -1)
+			continue;
+
+		while (read (fd, &ch, 1) > 0) {
+			if (ch == ' ') {
+				if (i != 0) {
+					ppid[i] = '\0';
+					break;
+				}
+				else
+					count++;
+				continue;
+			}
+			if (count == 3) {
+				ppid[i] = ch;
+				i++;
+			}
+		}
+
+		i = 0;
+		count = 0;
+		
+		/* if ( strcmp(argv[1], ppid) == 0 ) */
+		if ( atoi(argv[1]) == atoi(ppid) )
+			result++;
+		
+		/* printf("%s\n", ppid); */
+		/* memset(ppid, '\0', sizeof(ppid)); */
+
+		free(namelist[n]);
+	}
+
+	free(namelist);
+	
+	printf("%d\n", result);
+
+	exit(EXIT_SUCCESS);
+}
