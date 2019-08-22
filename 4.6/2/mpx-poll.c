@@ -8,9 +8,9 @@
 int main(void) 
 {
 	struct pollfd fds[2];
-	char buf[4096];
-	int  i;
-	int  rc;
+	char   buf[4096];
+	int    i;
+	int    rc;
 
 	/* открыть оба канала */
 	if ( (fds[0].fd = open("p1", O_RDONLY | O_NONBLOCK)) < 0 ) {
